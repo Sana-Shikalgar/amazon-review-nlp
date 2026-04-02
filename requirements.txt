@@ -1,0 +1,16 @@
+# Core Data Processing
+pandas>=1.5.0
+numpy>=1.23.0
+
+# Visualization
+matplotlib>=3.6.0
+seaborn>=0.12.0
+
+# GPU Support & Computational
+torch>=2.0.0
+
+# Data Loading & Streaming
+datasets>=2.10.0
+
+# Utilities
+tqdm>=4.65.0
