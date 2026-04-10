@@ -104,10 +104,12 @@
 - ❌ **NLP Preprocessing:** No tokenization, stemming, lemmatization, POS tagging
 - ❌ **Text Embeddings:** No Word2Vec, BERT, sentence encoders, or contextual vectors
 - ❌ **Feature Learning:** No autoencoders, VAE, contrastive learning, dimensionality reduction
-- ❌ **Predictive Modeling:** No supervised/unsupervised models trained for production
+- ❌ **Production Modeling:** No supervised/unsupervised models trained for inference serving
 - ❌ **Sentiment Classification:** No sentiment/emotion/sarcasm labels assigned
 - ❌ **Fairness Interventions:** No debiasing, rebalancing, or fairness constraint enforcement
 - ❌ **Privacy Transforms:** No differential privacy, anonymization, or federated encoding
+
+**Note on K-Means:** K-Means clustering (k=6) IS performed in `02_data_generation.ipynb` exclusively for stratified sampling; cluster labels are dropped from final export and not intended for downstream use.
 
 **Rationale:** Data curation decoupled from modeling. Text preprocessing, embeddings, and model choices depend on specific downstream tasks; premature implementation risks information loss and incompatibility with pretrained architectures.
 
@@ -126,6 +128,8 @@ print(df.shape)  # (2826526, 12)
 ---
 
 ## 9. Clustering Methodology
+
+Implemented in '02_data_generation.ipynb' file
 
 **K-Means clustering (k=6)** groups reviews into behavioral classes to enable stratified sampling:
 - **Clustering features:** rating, helpful_vote, review_length, is_verified, image_count, has_image, day_of_week, is_weekend, days_since_first_review, product_popularity
@@ -211,17 +215,16 @@ Each cluster contributes proportional records to final sample, ensuring joint di
 
 ```
 Raw Amazon Electronics (43M) [HuggingFace]
-    ↓ [Full load, no limit]
-Loaded (43M) [All records loaded]
-    ↓ [Filtering: helpful_vote > 0, missing values, empty text]
-Source of Truth (9.4M) [data/processed/source_of_truth.parquet]
-    ├─ Complete engineering dataset
-    ├─ All 12 features preserved
-    ├─ Reference for reproducibility and audit
+    ↓ [01_data_preparation.ipynb: Sections 1-5]
+Loaded (43M) [Quick overview, visualizations]
+    ↓ [01_data_preparation.ipynb: Sections 6-8]
+Source of Truth (9.4M) [source_of_truth.parquet]
+    ├─ 12 features; all records preserved
+    ├─ Reproducibility reference
     └─ Enables alternative sampling strategies
-    ↓ [K-Means clustering (k=6) + stratified 30% random sampling per cluster]
-amazon_reviews_s30.parquet (2.8M) [FINAL EXPORT]
-    ├─ Cluster labels dropped
+    ↓ [02_data_generation.ipynb: K-Means clustering (k=6) + stratified 30% sampling]
+amazon_reviews_s30.parquet (2.8M) [Final Export]
+    ├─ Cluster labels dropped (internal use only)
     ├─ Primary analysis dataset
     └─ Valid statistical representation of source_of_truth
 ```
@@ -235,6 +238,22 @@ amazon_reviews_s30.parquet (2.8M) [FINAL EXPORT]
 | **amazon_reviews_s10** | Rapid prototyping, development | 940K | Fast iteration | Limited precision; undersample rare patterns |
 
 **Key Notes:** Sampling is random stratification (no selection bias). All 12 features preserved in both. Random seed=42 ensures reproducibility.
+
+
+### 11.3 Processing Workflow (Multi-Notebook Structure)
+
+The original `data_processing.ipynb` has been refactored into two focused notebooks:
+
+### **01_data_preparation.ipynb** (Sections 1–8.3)
+[contents remain the same up to Save Source of Truth]
+- Sections 1–5 are data prep
+- Sections 6–8.3 are problem-specific cleaning + feature engineering
+- **Output:** `source_of_truth.parquet` (9.4M records, 12 features)
+
+### **02_data_generation.ipynb** (Post-Processing)
+- **K-Means Clustering:** k=6 on 10 behavioral features (for stratified sampling)
+- **Stratified Sampling:** 30% per cluster → 2.8M records
+- **Export:** `amazon_reviews_s30.parquet` (final dataset with cluster labels dropped)
 
 ---
 
@@ -334,12 +353,12 @@ amazon_reviews_s30.parquet (2.8M) [FINAL EXPORT]
 | **Data Cleaning** | Remove missing, invalid, unhelpful | ✅ | Data Engineer |
 | **Exploratory Analysis** | Compute statistics, visualizations | ✅ | Data Engineer |
 | **Feature Engineering** | Create behavioral/temporal features | ✅ | Data Engineer |
-| **Clustering (for sampling)** | K-Means for stratification | ✅ | Data Engineer |
-| **Stratified Sampling** | Reduce 9.4M → 2.8M | ✅ | Data Engineer |
+| **Clustering (for sampling)** | K-Means k=6 for stratification; labels dropped | ✅ | Data Engineer (02_data_generation.ipynb) |
+| **Stratified Sampling** | Reduce 9.4M → 2.8M (30% per cluster) | ✅ | Data Engineer (02_data_generation.ipynb) |
 | **Format Optimization** | Parquet export, compression | ✅ | Data Engineer |
 | **NLP Preprocessing** | Tokenization, stemming, lemmatization | ❌ | ML Engineer / Data Scientist |
 | **Embeddings** | BERT, sentence encoders, etc. | ❌ | ML Engineer |
-| **Model Training** | Supervised/unsupervised learning | ❌ | ML Engineer / Data Scientist |
+| **Model Training** | Supervised/unsupervised learning for inference | ❌ | ML Engineer / Data Scientist |
 | **Fairness & Privacy** | Bias audits, debiasing, anonymization | ❌ | ML Engineer / Data Scientist / Privacy Officer |
 
 ---
