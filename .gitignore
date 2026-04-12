@@ -1,6 +1,9 @@
 # Source of Truth
 data/processed/source_of_truth.parquet
 
+# Claude - specific files
+.claude/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
