@@ -1,5 +1,6 @@
 # Source of Truth
 data/processed/source_of_truth.parquet
+data/processed/clean_reviews.parquet
 
 # Claude code
 .claude/
