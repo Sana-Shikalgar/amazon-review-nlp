@@ -1,6 +1,9 @@
 # Source of Truth
 data/processed/source_of_truth.parquet
 
+# GloVe embeddings (too large for GitHub)
+data/glove.6B.100d.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
