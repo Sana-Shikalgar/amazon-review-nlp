@@ -1,17 +1,7 @@
 # WM9B7-AIDL-AmazonReview
 
-MSc Applied Artificial Intelligence — AI and Deep Learning (WM9B7)  
-WMG, University of Warwick — 2025/26  
-Client: IntelliSys Ltd.
-
----
-
-## Project Overview
-
-Binary classification task: predict whether an Amazon Electronics review will receive at least one helpful vote from other customers.
-
-**Dataset:** 50,000 Amazon Electronics reviews (HuggingFace, sampled from `amazon_reviews_us_Electronics_v1_00`)  
-**Target:** `helpful_binary` — 1 if `helpful_vote > 0`, else 0
+**Task:** Binary classification — `helpful_binary` (1 if `helpful_vote > 0`, else 0)  
+**Dataset:** 50,000 Amazon Electronics reviews · `amazon_reviews_us_Electronics_v1_00` via HuggingFace
 
 ---
 
