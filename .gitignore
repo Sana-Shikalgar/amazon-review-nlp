@@ -5,6 +5,9 @@ data/processed/clean_reviews.parquet
 # Claude - specific files
 .claude/
 
+# Model files
+models/
+
 # .pkl files
 models/*.pkl
 
