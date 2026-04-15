@@ -4,6 +4,10 @@ data/processed/source_of_truth.parquet
 # .pkl files
 models/*.pkl
 
+# LFS bandwidth is over
+models/multimodal_model.pt
+data/processed/clean_reviews.parquet
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
