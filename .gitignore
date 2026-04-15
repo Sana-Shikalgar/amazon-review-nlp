@@ -4,6 +4,10 @@ data/processed/clean_reviews.parquet
 
 # Claude code
 .claude/
+
+# Model files
+models/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
