@@ -5,11 +5,11 @@
 Group project for the AIDL module (WMG, University of Warwick).
 Dataset: McAuley-Lab/Amazon-Reviews-2023 (Electronics category).
 
-This repository contains the work for **Task 4: Sentiment & Emotion Analysis**.
+This repository contains the work for **Sentiment & Emotion Analysis** and **Explainability**.
 
 ---
 
-## Task 4 — Sentiment & Emotion Analysis
+## Sentiment & Emotion Analysis
 
 ### What was done
 
@@ -41,6 +41,33 @@ No model training was performed. Both models are used as-is from HuggingFace Hub
 - Mean model confidence of 0.79 indicates decisive, non-trivial predictions on the majority of inputs
 - `neutral` is the dominant emotion label (~40%), consistent with the informational tone of many product reviews
 - Emotion labels are reliable for clear cases (joy in 5-star praise, anger in defect/support complaints) but act as tone signals rather than direct proxies for star rating
+
+---
+
+## Explainability
+
+### What was done
+
+Added token-level explanations for both the sentiment and emotion models using LIME and SHAP,
+implemented in the same notebook (`notebook/sentiment_analysis.ipynb`, Step 4).
+
+**Methods:**
+- **LIME** (`lime.lime_text.LimeTextExplainer`) — perturbs input text 200 times and fits a local
+  linear model to identify which words most influenced the sentiment prediction
+- **SHAP** (`shap.Explainer` with `shap.maskers.Text`) — assigns Shapley values to each token,
+  showing its marginal contribution to the predicted class score
+
+Both methods are applied to one representative review per sentiment label (positive / neutral / negative).
+SHAP is also applied to the emotion model for one sample, explaining the predicted emotion label.
+
+**Key findings:**
+- LIME and SHAP agree on the most influential tokens (e.g. *helpful*, *SURPRISINGLY*, *overall* for positive)
+- SHAP additionally reveals that negation (*doesn't allow*) and HTML noise (`<br />`) have measurable
+  countervailing effects that LIME's word-removal approach misses
+- For the emotion model, *surprises* reduces the neutral score despite appearing in "No surprises" —
+  a known limitation of token-level attribution where negation context is not captured
+
+---
 
 ### Running the notebook
 
