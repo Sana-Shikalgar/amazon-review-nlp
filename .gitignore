@@ -1,18 +1,11 @@
 # Data files
 data/
 
-# Claude - specific files
+# Claude code
 .claude/
 
 # Model files
 models/
-
-# .pkl files
-models/*.pkl
-
-# LFS bandwidth is over
-models/multimodal_model.pt
-data/processed/clean_reviews.parquet
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
