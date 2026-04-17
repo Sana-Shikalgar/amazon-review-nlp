@@ -1,5 +1,11 @@
 # Source of Truth
-data/processed/source_of_truth.parquet
+data/
+
+# Claude code
+.claude/
+
+# Model files
+models/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
