@@ -1,17 +1,55 @@
-## What I've done (Sentiment & Emotion Analysis)
+# Amazon Electronics Reviews — Sentiment & Emotion Analysis
 
-- Created branch feat/sentiment-analysis
-- Built an inference pipeline in notebook/sentiment_analysis.ipynb using two pre-trained Hugging Face models:
-  - cardiffnlp/twitter-roberta-base-sentiment-latest for positive / neutral / negative
-  - j-hartmann/emotion-english-distilroberta-base for joy, anger, sadness, fear, disgust, surprise, and neutral
-- Applied filtering to select the top 5 reviews per product, ranked by helpful votes with review length as a tiebreaker
-- Ran inference on 10,000 reviews as a CPU development run
-- Saved results to data/processed/sentiment_emotion_results.parquet
-- Stored class probability scores from the models and exposed the top-1 label as the main output
+## Project Overview
 
-## Basic checks performed
+Group project for the AIDL module (WMG, University of Warwick).
+Dataset: McAuley-Lab/Amazon-Reviews-2023 (Electronics category).
 
-- Checked alignment between sentiment predictions and star ratings
-- Reviewed model confidence distributions
-- Examined emotion label distributions across the dataset
-- Performed manual spot-checks on a small number of reviews
+This repository contains the work for **Task 4: Sentiment & Emotion Analysis**.
+
+---
+
+## Task 4 — Sentiment & Emotion Analysis
+
+### What was done
+
+Built an inference-only pipeline in `notebook/sentiment_analysis.ipynb` using two pre-trained HuggingFace models applied to the Amazon Electronics Reviews dataset.
+
+**Models used:**
+- `cardiffnlp/twitter-roberta-base-sentiment-latest` — 3-class sentiment (positive / neutral / negative)
+- `j-hartmann/emotion-english-distilroberta-base` — 7-class emotion (joy, anger, sadness, fear, disgust, surprise, neutral)
+
+No model training was performed. Both models are used as-is from HuggingFace Hub.
+
+**Pipeline steps:**
+
+1. Load `data/processed/amazon_reviews_s10.parquet` (846K reviews, 17 columns)
+2. Filter to the top-5 most helpful reviews per product, ranked by `helpful_vote` with `review_length` as tiebreaker — yields ~504K reviews
+3. Run batched inference on `combined_text` (title + `[SEP]` + review body) with 512-token truncation
+4. Store full class probability distributions alongside top-1 labels
+5. Save results to `data/processed/sentiment_emotion_results.parquet`
+
+**Evaluation (Step 3):**
+- Sentiment vs. star rating alignment (stacked bar chart per rating)
+- Confidence distribution of top-1 sentiment prediction (mean: 0.79 vs. 0.33 random-chance baseline for 3-class)
+- Emotion label distribution across the inference set
+- Manual spot-checks: 3 reviews sampled per emotion label with qualitative interpretation
+
+### Key findings
+
+- Sentiment aligns well with star ratings at the extremes (1-star → negative, 5-star → positive)
+- Mean model confidence of 0.79 indicates decisive, non-trivial predictions on the majority of inputs
+- `neutral` is the dominant emotion label (~40%), consistent with the informational tone of many product reviews
+- Emotion labels are reliable for clear cases (joy in 5-star praise, anger in defect/support complaints) but act as tone signals rather than direct proxies for star rating
+
+### Running the notebook
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Ensure data is available
+#    (parquet files are not tracked in git — obtain from shared drive)
+
+# 3. Open notebook
+jupyter notebook notebook/sentiment_analysis.ipynb
