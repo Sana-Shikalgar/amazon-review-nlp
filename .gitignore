@@ -4,6 +4,13 @@ data/processed/source_of_truth.parquet
 # GloVe embeddings (too large for GitHub)
 data/glove.6B.100d.txt
 
+# Processed data (too large for GitHub)
+data/processed/*.parquet
+data/processed/*.csv
+
+# Word/Office temporary lock files
+~$*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
