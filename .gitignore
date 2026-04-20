@@ -4,6 +4,9 @@ data/processed/source_of_truth.parquet
 # GloVe embeddings (too large for GitHub)
 data/glove.6B.100d.txt
 
+# PyTorch saved model weights (too large for GitHub)
+lstm/saved_models/
+
 # Processed data (too large for GitHub)
 data/processed/*.parquet
 data/processed/*.csv
