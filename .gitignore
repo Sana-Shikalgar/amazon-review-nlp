@@ -2,11 +2,14 @@
 data/processed/source_of_truth.parquet
 data/processed/clean_reviews.parquet
 
+# GloVe embeddings (too large for GitHub)
+data/glove.6B.100d.txt
+
+# Word/Office temporary lock files
+~$*
+
 # Claude code
 .claude/
-
-# Model files
-models/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
