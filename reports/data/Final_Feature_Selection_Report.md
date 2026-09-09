@@ -1,5 +1,10 @@
 # Final Feature Selection & Validation Report
 
+> **This document's conclusions conflict with `Feature_Redundancy_Analysis.md`** on whether to
+> keep `word_count` or `review_length`, and `has_image` or `image_count`. That report's
+> quantitative VIF/correlation analysis recommends the opposite of what's below. See
+> `FUTURE.md` for the open question on which the team should standardize on.
+
 ## Executive Summary
 This report presents the consolidated, validated feature set for the Amazon Review Helpfulness Optimization project. By systematically extracting engineered features from the `feat/eda`, `feat/lstm`, and `feat/multimodel` branches, we've produced a robust pipeline that balances predictive power, model interpretability, and business value.
 
