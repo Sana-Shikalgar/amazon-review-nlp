@@ -5,16 +5,12 @@ Amazon Electronics Reviews — from 43M raw reviews to workable scale (`s30`, `s
 ## Executive Summary
 
 43M raw reviews were reduced to two workable datasets — `s30` (2,826,526 records, 30% sample)
-and `s10` (942,176 records, 10% sample, per the original design target — see note below on the
-committed dataset's actual row count) — via a three-stage pipeline: quality filtering, K-Means
-behavioral clustering, and proportional stratified sampling. This preserves the multivariate
-distributional structure of the original data while cutting compute cost 3.3x (`s30`) / 10x
-(`s10`).
-
-> **Note:** the actually-committed `amazon_reviews_s10.parquet` in this repo has 846,757 rows,
-> not the 942,176 this report was originally written against — see `FUTURE.md` for the broader
-> gap around `s30` reproducibility. The methodology below (filtering → clustering → stratified
-> sampling) still describes the real pipeline; only the exact row counts have since shifted.
+and `s10` (942,176 records, 10% sample) — via a three-stage pipeline: quality filtering,
+K-Means behavioral clustering, and proportional stratified sampling. This preserves the
+multivariate distributional structure of the original data while cutting compute cost 3.3x
+(`s30`) / 10x (`s10`). Both row counts are verified against the actual committed
+`data/processed/amazon_reviews_s30.parquet` (2,826,526 rows, 955.7 MB) and
+`amazon_reviews_s10.parquet` (942,176 rows, 318.4 MB).
 
 ## The reduction pipeline
 

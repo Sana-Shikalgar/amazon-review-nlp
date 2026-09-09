@@ -1,5 +1,8 @@
 # PPT Content: Amazon Review Helpfulness Prediction — LSTM Pipeline (`lstmv1.ipynb`)
 
+> **Dataset-size note:** figures below are from a run on `amazon_reviews_s10.parquet` when it
+> had 846,757 rows; the committed file now has 942,176 (see `01_lstm_readme.md` for detail).
+
 ---
 
 ## Slide 1 — Project Overview

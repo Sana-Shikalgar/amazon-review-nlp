@@ -2,6 +2,12 @@
 
 This document provides a high-level and critical interpretation of `lstm/lstmv1.ipynb`, including model outcomes, explainability findings, limitations, and recommended next steps.
 
+> **Dataset-size note:** this analysis was run against `amazon_reviews_s10.parquet` when it had
+> 846,757 rows. The currently committed file has 942,176 rows (a later resample) — results
+> below will shift somewhat on a fresh run. Directional findings (Hybrid BiLSTM wins,
+> `review_length` dominates) are expected to hold; treat exact metric values as historical
+> until re-verified.
+
 ## 1) Objective and Scope
 
 - Build a binary classifier for review helpfulness (`helpful`).
@@ -154,6 +160,26 @@ Decision interpretation:
 - If your priority is **resource-constrained inference**, NB/LR remain attractive despite lower ceiling.
 - If your priority is **text semantics only**, BiLSTM-family models are more appropriate than TF-IDF baselines.
 
+## 3.3) Training Configuration & Architecture Details
+
+- TF-IDF baselines: max 30,000 features, unigrams + bigrams, sublinear TF scaling.
+- GloVe embeddings: `glove.6B.100d` (100-dimensional), aligned to the training vocabulary;
+  known words get their GloVe vector, unknown words get small random init, PAD token is
+  zero-vector.
+- Model parameter counts:
+  - Vanilla LSTM: 6,532,225 (random 128-d embeddings, forward-only, no metadata)
+  - BiLSTM+GloVe: 5,631,041 (GloVe 100-d, bidirectional, 2 layers, no metadata)
+  - Hybrid BiLSTM: 5,649,105 (GloVe 100-d, bidirectional, 2 layers, + metadata branch)
+- Training loop: class-weighted `BCEWithLogitsLoss` (pos_weight computed from the label
+  imbalance), gradient clipping at `max_norm=1.0`, `ReduceLROnPlateau` (factor 0.5, patience 1),
+  early stopping (patience 3) on validation loss, Adam optimizer at `lr=1e-3`, batch size 256
+  train / 512 eval.
+
+Note: an earlier analysis pass over this notebook (942,176-row dataset snapshot) reported the
+Hybrid BiLSTM as not finishing training, with Vanilla LSTM/BiLSTM+GloVe both scoring
+F1 ≈ 0.59–0.60. That run is superseded by the results below (846,757 rows, all three deep
+models completed) — the config details above still apply to the current run.
+
 ## 4) Main Quantitative Results
 
 From the notebook's comparison table:
@@ -249,6 +275,12 @@ Interpretation:
 5. **Explainability governance**
    - add multi-sample LIME stability checks,
    - report SHAP confidence intervals via bootstrapping.
+6. **Self-attention over LSTM outputs** — let the model weight the most informative tokens
+   instead of relying purely on final hidden states.
+7. **Ensembling** — stack LSTM predictions with the TF-IDF baselines (e.g. Random Forest) for
+   robustness.
+8. **Sub-word tokenization** (BPE / SentencePiece) to handle out-of-vocabulary words better
+   than the current fixed 50K-token vocabulary.
 
 ## 10) Reproducibility Checklist
 

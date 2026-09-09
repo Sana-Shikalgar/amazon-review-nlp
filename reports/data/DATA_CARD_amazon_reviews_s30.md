@@ -109,7 +109,7 @@
 - ❌ **Fairness Interventions:** No debiasing, rebalancing, or fairness constraint enforcement
 - ❌ **Privacy Transforms:** No differential privacy, anonymization, or federated encoding
 
-**Note on K-Means:** K-Means clustering (k=6) IS performed in `02_data_generation.ipynb` exclusively for stratified sampling; cluster labels are dropped from final export and not intended for downstream use.
+**Note on K-Means:** K-Means clustering (k=6) IS performed in `03_clustering_sampling.ipynb` exclusively for stratified sampling; cluster labels are dropped from final export and not intended for downstream use.
 
 **Rationale:** Data curation decoupled from modeling. Text preprocessing, embeddings, and model choices depend on specific downstream tasks; premature implementation risks information loss and incompatibility with pretrained architectures.
 
@@ -129,7 +129,7 @@ print(df.shape)  # (2826526, 12)
 
 ## 9. Clustering Methodology
 
-Implemented in '02_data_generation.ipynb' file
+Implemented in '03_clustering_sampling.ipynb' file
 
 **K-Means clustering (k=6)** groups reviews into behavioral classes to enable stratified sampling:
 - **Clustering features:** rating, helpful_vote, review_length, is_verified, image_count, has_image, day_of_week, is_weekend, days_since_first_review, product_popularity
@@ -215,19 +215,24 @@ Each cluster contributes proportional records to final sample, ensuring joint di
 
 ```
 Raw Amazon Electronics (43M) [HuggingFace]
-    ↓ [01_data_preparation.ipynb: Sections 1-5]
-Loaded (43M) [Quick overview, visualizations]
-    ↓ [01_data_preparation.ipynb: Sections 6-8]
-Source of Truth (9.4M) [source_of_truth.parquet]
-    ├─ 12 features; all records preserved
-    ├─ Reproducibility reference
-    └─ Enables alternative sampling strategies
-    ↓ [02_data_generation.ipynb: K-Means clustering (k=6) + stratified 30% sampling]
+    ↓ [01_data_preparation.ipynb: cleaning, filtering]
+Cleaned reviews (~8.5M after helpful_vote>0 + per-product filters)
+    ↓ [02_feature_engineering.ipynb: engineered features]
+Featured reviews (12 engineered/derived features added)
+    ↓ [03_clustering_sampling.ipynb: K-Means clustering (k=6) + stratified sampling]
 amazon_reviews_s30.parquet (2.8M) [Final Export]
     ├─ Cluster labels dropped (internal use only)
     ├─ Primary analysis dataset
-    └─ Valid statistical representation of source_of_truth
+    └─ Valid statistical representation of the cleaned/featured source
 ```
+
+Note: this pipeline was originally two notebooks (`01_data_preparation.ipynb` producing a
+`source_of_truth.parquet`, `02_data_generation.ipynb` doing clustering+sampling) and has since
+been split into three (`01_data_preparation` → `02_feature_engineering` →
+`03_clustering_sampling`), with slightly different intermediate filenames
+(`clean_reviews.parquet`/`featured_reviews.parquet` under `data/sourced/`, not
+`source_of_truth.parquet` under `data/processed/`). See `FUTURE.md` for the open gap this
+leaves: the current pipeline code reproduces `amazon_reviews_s10.parquet` but not `s30`.
 
 ### 11.2 When to Use Each
 
@@ -242,18 +247,21 @@ amazon_reviews_s30.parquet (2.8M) [Final Export]
 
 ### 11.3 Processing Workflow (Multi-Notebook Structure)
 
-The original `data_processing.ipynb` has been refactored into two focused notebooks:
+The original `data_processing.ipynb` has been refactored into three focused notebooks:
 
-### **01_data_preparation.ipynb** (Sections 1–8.3)
-[contents remain the same up to Save Source of Truth]
-- Sections 1–5 are data prep
-- Sections 6–8.3 are problem-specific cleaning + feature engineering
-- **Output:** `source_of_truth.parquet` (9.4M records, 12 features)
+### **01_data_preparation.ipynb**
+- Load raw reviews, quality/content filtering, `helpful_vote > 0` filter, per-product filter
+- **Output:** `clean_reviews.parquet`
 
-### **02_data_generation.ipynb** (Post-Processing)
+### **02_feature_engineering.ipynb**
+- Derives the 8 engineered features described in Section 3
+- **Output:** `featured_reviews.parquet`
+
+### **03_clustering_sampling.ipynb**
 - **K-Means Clustering:** k=6 on 10 behavioral features (for stratified sampling)
-- **Stratified Sampling:** 30% per cluster → 2.8M records
-- **Export:** `amazon_reviews_s30.parquet` (final dataset with cluster labels dropped)
+- **Stratified Sampling:** proportional sampling per cluster
+- **Export:** `amazon_reviews_s10.parquet` (10% sample; `s30` was produced by an earlier
+  version of this notebook — see the note in Section 11.1)
 
 ---
 
@@ -353,8 +361,8 @@ The original `data_processing.ipynb` has been refactored into two focused notebo
 | **Data Cleaning** | Remove missing, invalid, unhelpful | ✅ | Data Engineer |
 | **Exploratory Analysis** | Compute statistics, visualizations | ✅ | Data Engineer |
 | **Feature Engineering** | Create behavioral/temporal features | ✅ | Data Engineer |
-| **Clustering (for sampling)** | K-Means k=6 for stratification; labels dropped | ✅ | Data Engineer (02_data_generation.ipynb) |
-| **Stratified Sampling** | Reduce 9.4M → 2.8M (30% per cluster) | ✅ | Data Engineer (02_data_generation.ipynb) |
+| **Clustering (for sampling)** | K-Means k=6 for stratification; labels dropped | ✅ | Data Engineer (03_clustering_sampling.ipynb) |
+| **Stratified Sampling** | Reduce 9.4M → 2.8M (30% per cluster) | ✅ | Data Engineer (03_clustering_sampling.ipynb) |
 | **Format Optimization** | Parquet export, compression | ✅ | Data Engineer |
 | **NLP Preprocessing** | Tokenization, stemming, lemmatization | ❌ | ML Engineer / Data Scientist |
 | **Embeddings** | BERT, sentence encoders, etc. | ❌ | ML Engineer |
