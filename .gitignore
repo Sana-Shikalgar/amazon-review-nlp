@@ -12,6 +12,9 @@ data/glove.6B.100d.txt
 # Word/Office temporary lock files
 ~$*
 
+# Claude code
+.claude/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
