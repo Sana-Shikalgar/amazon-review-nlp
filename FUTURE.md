@@ -13,7 +13,7 @@ from the individual model reports.
   with a documented `SAMPLED_FRACTION` for `s30`, or retire `s30` in favor of `s10` everywhere
   and update the notebooks/docs that reference it.
 - **No consistent train/val/test split shared across models.** `05_visualization.ipynb` exports
-  a temporal split (`splits/train.parquet`, `val.parquet`, `test.parquet`); the model notebooks
+  a temporal split (`data/splits/train.parquet`, `val.parquet`, `test.parquet`); the model notebooks
   each do their own splitting instead of consuming it. Standardizing on one split would make
   results genuinely comparable across models.
 - **Image downloader reliability.** `04_image_downloader.ipynb` has no retry/backoff and takes

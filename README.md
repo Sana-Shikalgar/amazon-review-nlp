@@ -17,6 +17,7 @@ End-to-end pipeline for two tasks on the Amazon Electronics Reviews dataset
 data/
   processed/            — cleaned/sampled datasets (amazon_reviews_s10.parquet, s30.parquet), Git LFS
   multimodel/            — multimodal-specific dataset (dataset_50k.parquet), Git LFS
+  splits/                — temporal train/val/test split exported by 05_visualization.ipynb, Git LFS
 notebook/                — data pipeline, run in order
   01_data_preparation.ipynb    — load raw reviews, clean, filter
   02_feature_engineering.ipynb — engineer review_length, image_bucket, popularity, etc.
