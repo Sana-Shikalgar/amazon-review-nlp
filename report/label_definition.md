@@ -27,7 +27,7 @@ helpful_binary = 0  if  helpful_vote == 0
 
 > **Note — label adaptation:** `amazon_reviews_s30.parquet` was pre-filtered to retain only
 > reviews with `helpful_vote > 0`, so the primary threshold produces a single-class label.
-> `viz.ipynb` detects this and falls back to a **median split** on `helpful_vote` (threshold = 1),
+> `05_visualization.ipynb` detects this and falls back to a **median split** on `helpful_vote` (threshold = 1),
 > producing the near-balanced distribution below.
 
 | Class         | Label | Actual % (2,826,526 rows) |
@@ -37,7 +37,7 @@ helpful_binary = 0  if  helpful_vote == 0
 
 Median split: `helpful_binary = 1` if `helpful_vote > 1`, else `0`.
 
-*Exact figures printed in `viz.ipynb` Cell 3 output.*
+*Exact figures printed in `05_visualization.ipynb` Cell 3 output.*
 
 ## Implication for Modelling
 
