@@ -15,3 +15,11 @@ pyarrow>=10.0.0
 
 # Utilities
 tqdm>=4.65.0
+
+# Sentiment & Emotion Inference
+transformers>=4.57.6
+torch>=2.4.1
+
+# Explainability
+lime>=0.2.0.1
+shap>=0.44.0
