@@ -1,3 +1,17 @@
+# Source of Truth
+data/processed/source_of_truth.parquet
+
+# GloVe embeddings (too large for GitHub)
+data/glove.6B.100d.txt
+
+# Model weight files (not tracked; too large / no checkpoints saved yet)
+*.pt
+*.h5
+*.hdf5
+
+# Word/Office temporary lock files
+~$*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
