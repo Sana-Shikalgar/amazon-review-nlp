@@ -6,6 +6,13 @@ from the individual model reports.
 
 ## Data pipeline
 
+- **Feature-selection guidance is contradictory across reports.** `reports/data/Final_Feature_Selection_Report.md`
+  recommends keeping `word_count` and dropping `review_length` (and keeping `has_image` over
+  `image_count`); `reports/data/Feature_Redundancy_Analysis.docx`'s quantitative VIF/correlation
+  analysis recommends the opposite on both (keep `review_length` over `word_count`, r=0.997/VIF=247.7;
+  keep `image_count` over `has_image`). These need to be reconciled — the docx's analysis is backed
+  by explicit VIF numbers and is the more likely one to trust, but the team should confirm which
+  feature set `02_feature_engineering.ipynb` should actually standardize on.
 - **`amazon_reviews_s30.parquet` has no reproducing notebook.** The current `notebook/01`–`03`
   pipeline only reproduces `amazon_reviews_s10.parquet` (a 10% cluster-stratified sample).
   `s30` (the 30% sample most models and `05_visualization.ipynb` actually load) was produced
