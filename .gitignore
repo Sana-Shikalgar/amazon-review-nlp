@@ -1,3 +1,13 @@
+# Source of Truth
+data/processed/source_of_truth.parquet
+data/processed/clean_reviews.parquet
+
+# Claude - specific files
+.claude/
+
+# Model files
+models/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
