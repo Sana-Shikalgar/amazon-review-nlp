@@ -1,143 +1,152 @@
-# WM9B7-AIDL-AmazonReview
+# Amazon Review
 
-**Task:** Binary classification — `helpful_binary` (1 if `helpful_vote > 0`, else 0)  
-**Dataset:** 50,000 Amazon Electronics reviews · `amazon_reviews_us_Electronics_v1_00` via HuggingFace
+End-to-end pipeline for two tasks on the Amazon Electronics Reviews dataset
+(McAuley-Lab/Amazon-Reviews-2023, via HuggingFace):
 
----
-
-## Repository Structure
-
-| Branch | Owner | Contents |
-|---|---|---|
-| `feat/multimodel` | Sana | Data pipeline, multimodal model (text + image) |
-| `feat/lstm` | Lithika | LSTM sequence model |
-| `BERT-(Kevin)` | Kevin | BERT-based helpfulness classifier |
-| `feat/validation` | Sanath | Validation notebooks and documentation |
-| `feat/viz` | Arjun | EDA visualisation notebook |
+1. **Helpfulness prediction** — binary classification of `helpful_binary` (1 if
+   `helpful_vote > 0`, else 0), compared across three models: an LSTM/BiLSTM family, a
+   BERT-based fusion model, and a multimodal (text + image) model.
+2. **Sentiment & emotion analysis** — inference-only pipeline applying two pre-trained
+   HuggingFace models to the same review corpus, with LIME/SHAP explainability.
 
 ---
 
-## This Branch — `feat/viz`
-
-Exploratory data analysis and visualisation for the helpfulness prediction task.
-
-### Files
+## Repository structure
 
 ```
-notebook/
-  viz.ipynb         — Main EDA notebook (32 cells, fully executed)
-report/
-  label_definition.md  — Target variable definition and class distribution
-requirements.txt    — Python dependencies
+data/
+  processed/            — cleaned/sampled datasets (amazon_reviews_s10.parquet, s30.parquet), Git LFS
+  multimodel/            — multimodal-specific dataset (dataset_50k.parquet), Git LFS
+notebook/                — data pipeline, run in order
+  01_data_preparation.ipynb    — load raw reviews, clean, filter
+  02_feature_engineering.ipynb — engineer review_length, image_bucket, popularity, etc.
+  03_clustering_sampling.ipynb — cluster-stratified sampling to amazon_reviews_s10.parquet
+  04_image_downloader.ipynb    — download review images for the multimodal dataset
+  05_visualization.ipynb       — EDA, correlations, mutual information, temporal train/val/test split
+models/                  — model notebooks, numbered by progression in complexity
+  01_lstm.ipynb           — TF-IDF baselines + Vanilla LSTM + BiLSTM+GloVe + Hybrid BiLSTM
+  02_bert.ipynb            — DistilBERT + metadata fusion model
+  03_multimodel.ipynb      — text + image + metadata fusion model
+  sentiment_analysis.ipynb — sentiment + emotion inference and explainability (separate task, not numbered)
+reports/
+  data/                   — data cards, feature/sampling methodology reports
+  models/                 — per-model analysis reports (LSTM overview, results, presentation)
+environment.yml           — conda environment spec
+requirements.txt          — pip requirements (see note on installing the CUDA torch build)
+FUTURE.md                 — known gaps and recommended next steps
 ```
 
-### Notebook Coverage
+---
 
-1. Setup & data load (2,826,526 reviews from `amazon_reviews_s30.parquet`)
-2. Target variable analysis — class balance, vote distribution
-3. Feature → target relationships — correlation heatmap
-4. Text characteristics — length, word count, depth by class
-5. Temporal patterns — time-based helpfulness trends
-6. Rating deep dive — skew and helpfulness by rating
-7. Verified purchase analysis — trust signal impact
-8. Correlation & feature overview — Pearson r rankings
-9. NLP analysis — top unigrams and bigrams per class (CountVectorizer)
-10. Mutual information — non-linear feature importance proxy
-11. Feature interaction effects — length × rating × verified
-12. Violin plots — distribution by class
-13. Temporal train/val/test split (pre-2020 / 2020 / post-2020)
-14. Split export — `splits/train.parquet`, `val.parquet`, `test.parquet`
-15. Modelling implications — class imbalance, feature selection notes
+## Setup
 
-### Key Findings
+### Conda
 
-- `word_count` and `review_length` are the strongest predictors (r ≈ +0.24)
-- Verified purchases are slightly *less* likely to be helpful (r ≈ −0.08)
-- Older reviews accumulate more votes — temporal split preferred over random
-- Class imbalance ~53/47 on the filtered dataset → `class_weight='balanced'` recommended
-- Top MI features: `word_count`, `review_length`, `is_long`, `year`
+```bash
+conda env create -f environment.yml
+conda activate amazon-review
+```
+
+### Pip
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121  # or your CUDA version
+pip install -r requirements.txt
+```
+
+### Data
+
+The processed datasets are tracked with Git LFS:
+
+```bash
+git lfs install
+git lfs pull
+```
 
 ---
 
-# Amazon Electronics Reviews — Sentiment & Emotion Analysis
+## How to run
 
-## Project Overview
+Run the data pipeline first, then any model notebook (each model notebook is independent
+of the others once the data pipeline has produced `data/processed/amazon_reviews_s10.parquet`):
 
-Group project for the AIDL module (WMG, University of Warwick).
-Dataset: McAuley-Lab/Amazon-Reviews-2023 (Electronics category).
+```bash
+jupyter nbconvert --to notebook --execute --inplace notebook/01_data_preparation.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebook/02_feature_engineering.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebook/03_clustering_sampling.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebook/04_image_downloader.ipynb   # needed for models/03_multimodel.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebook/05_visualization.ipynb
 
-This repository contains the work for **Sentiment & Emotion Analysis** and **Explainability**.
+jupyter nbconvert --to notebook --execute --inplace models/01_lstm.ipynb
+jupyter nbconvert --to notebook --execute --inplace models/02_bert.ipynb
+jupyter nbconvert --to notebook --execute --inplace models/03_multimodel.ipynb            # ~4h/epoch — run in the background
+jupyter nbconvert --to notebook --execute --inplace models/sentiment_analysis.ipynb
+```
+
+`01_data_preparation.ipynb` re-downloads and cleans the full 43M-row raw dataset unless
+`data/processed/amazon_reviews_s30.parquet` already exists, in which case it verifies the
+pipeline against a small streamed sample instead — see the notebook for details.
 
 ---
 
-## Sentiment & Emotion Analysis
+## Helpfulness prediction — model comparison
 
-### What was done
+<!-- TODO: filled in from the fresh full-execution results; see the per-model reports in
+     reports/models/ for the underlying detail. Sample sizes differ across models (LSTM:
+     846K rows, BERT: 48K-review subset, multimodal: ~73K rows with images) — see FUTURE.md
+     for the plan to make this genuinely apples-to-apples. -->
 
-Built an inference-only pipeline in `notebook/sentiment_analysis.ipynb` using two pre-trained HuggingFace models applied to the Amazon Electronics Reviews dataset.
+| Model | Sample size | Accuracy | F1 | Precision | Recall | AUC |
+|---|---|---|---|---|---|---|
+| Hybrid BiLSTM (best of the LSTM family) | 846,757 | _pending_ | _pending_ | _pending_ | _pending_ | _pending_ |
+| BERT (DistilBERT + metadata fusion) | 48,675 | _pending_ | _pending_ | _pending_ | _pending_ | _pending_ |
+| Multimodal (text + image + metadata) | ~73,000 | — | _pending_ | _pending_ | _pending_ | — |
 
-**Models used:**
-- `cardiffnlp/twitter-roberta-base-sentiment-latest` — 3-class sentiment (positive / neutral / negative)
-- `j-hartmann/emotion-english-distilroberta-base` — 7-class emotion (joy, anger, sadness, fear, disgust, surprise, neutral)
+**Best model:** _pending final numbers from this run — see `reports/models/` for full analysis
+per model once updated._
 
-No model training was performed. Both models are used as-is from HuggingFace Hub.
+---
+
+## Sentiment & emotion analysis
+
+Inference-only pipeline (`models/sentiment_analysis.ipynb`) — no training performed:
+
+- **Sentiment:** `cardiffnlp/twitter-roberta-base-sentiment-latest` (positive / neutral / negative)
+- **Emotion:** `j-hartmann/emotion-english-distilroberta-base` (joy, anger, sadness, fear, disgust, surprise, neutral)
 
 **Pipeline steps:**
 
 1. Load `data/processed/amazon_reviews_s10.parquet` (846K reviews, 17 columns)
-2. Filter to the top-5 most helpful reviews per product, ranked by `helpful_vote` with `review_length` as tiebreaker — yields ~504K reviews
-3. Run batched inference on `combined_text` (title + `[SEP]` + review body) with 512-token truncation
+2. Filter to the top-5 most helpful reviews per product, ranked by `helpful_vote` with
+   `review_length` as tiebreaker
+3. Run batched inference on `combined_text` (title + `[SEP]` + review body) with 512-token
+   truncation
 4. Store full class probability distributions alongside top-1 labels
-5. Save results to `data/processed/sentiment_emotion_results.parquet`
 
-**Evaluation (Step 3):**
-- Sentiment vs. star rating alignment (stacked bar chart per rating)
-- Confidence distribution of top-1 sentiment prediction (mean: 0.79 vs. 0.33 random-chance baseline for 3-class)
-- Emotion label distribution across the inference set
-- Manual spot-checks: 3 reviews sampled per emotion label with qualitative interpretation
-
-### Key findings
+**Key findings** (see `models/sentiment_analysis.ipynb` and `FUTURE.md` for full detail):
 
 - Sentiment aligns well with star ratings at the extremes (1-star → negative, 5-star → positive)
-- Mean model confidence of 0.79 indicates decisive, non-trivial predictions on the majority of inputs
-- `neutral` is the dominant emotion label (~40%), consistent with the informational tone of many product reviews
-- Emotion labels are reliable for clear cases (joy in 5-star praise, anger in defect/support complaints) but act as tone signals rather than direct proxies for star rating
+- Mean top-1 confidence ≈ 0.80, well above the 0.33 random baseline for 3 classes
+- The two models are complementary, not interchangeable — a 4.7% conflict rate exists between
+  emotion and sentiment polarity (e.g. negative emotion paired with positive sentiment)
+- The `fear` emotion label is unreliable (bimodal across ratings 1 and 5) and should be
+  excluded from downstream use
+
+Sentiment and emotion answer different questions (polarity vs. affect), so this task has no
+single "best model" the way helpfulness prediction does — both models are kept and reported
+together.
+
+### Explainability
+
+Both the sentiment and emotion models are explained with LIME (`lime.lime_text.LimeTextExplainer`,
+200-perturbation local linear approximation) and SHAP (`shap.Explainer` with `shap.maskers.Text`,
+Shapley-value token attribution) on representative examples per sentiment label. See
+`models/sentiment_analysis.ipynb`, Step 4, for the full walkthrough.
 
 ---
 
-## Explainability
+## Further reading
 
-### What was done
-
-Added token-level explanations for both the sentiment and emotion models using LIME and SHAP,
-implemented in the same notebook (`notebook/sentiment_analysis.ipynb`, Step 4).
-
-**Methods:**
-- **LIME** (`lime.lime_text.LimeTextExplainer`) — perturbs input text 200 times and fits a local
-  linear model to identify which words most influenced the sentiment prediction
-- **SHAP** (`shap.Explainer` with `shap.maskers.Text`) — assigns Shapley values to each token,
-  showing its marginal contribution to the predicted class score
-
-Both methods are applied to one representative review per sentiment label (positive / neutral / negative).
-SHAP is also applied to the emotion model for one sample, explaining the predicted emotion label.
-
-**Key findings:**
-- LIME and SHAP agree on the most influential tokens (e.g. *helpful*, *SURPRISINGLY*, *overall* for positive)
-- SHAP additionally reveals that negation (*doesn't allow*) and HTML noise (`<br />`) have measurable
-  countervailing effects that LIME's word-removal approach misses
-- For the emotion model, *surprises* reduces the neutral score despite appearing in "No surprises" —
-  a known limitation of token-level attribution where negation context is not captured
-
----
-
-### Running the notebook
-
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Ensure data is available
-#    (parquet files are not tracked in git — obtain from shared drive)
-
-# 3. Open notebook
-jupyter notebook notebook/sentiment_analysis.ipynb
+- `reports/data/` — data cards, feature engineering and sampling methodology
+- `reports/models/` — per-model analysis reports
+- `FUTURE.md` — known gaps and recommended next steps
