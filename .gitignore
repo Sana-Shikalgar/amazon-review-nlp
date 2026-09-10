@@ -5,6 +5,9 @@ data/sourced/
 # Downloaded product images (13GB+; regenerate via notebook/04_image_downloader.ipynb)
 data/images/
 
+# Pretrained GloVe embeddings (347MB; public/stable, auto-downloaded by 06_lstm.ipynb)
+data/glove.6B.100d.txt
+
 # Word/Office temporary lock files
 ~$*
 
