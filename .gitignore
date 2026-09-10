@@ -2,17 +2,11 @@
 # and 02_feature_engineering.ipynb; too large for GitHub even with LFS)
 data/sourced/
 
-# GloVe embeddings (too large for GitHub)
-data/glove.6B.100d.txt
-
 # Downloaded product images (13GB+; regenerate via notebook/04_image_downloader.ipynb)
 data/images/
 
 # Word/Office temporary lock files
 ~$*
-
-# Claude code
-.claude/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
