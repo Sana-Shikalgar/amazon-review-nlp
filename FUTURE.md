@@ -13,16 +13,20 @@ from the individual model reports.
   keep `image_count` over `has_image`). These need to be reconciled — the docx's analysis is backed
   by explicit VIF numbers and is the more likely one to trust, but the team should confirm which
   feature set `02_feature_engineering.ipynb` should actually standardize on.
-- **`amazon_reviews_s30.parquet` has no reproducing notebook.** The current `notebook/01`–`03`
-  pipeline only reproduces `amazon_reviews_s10.parquet` (a 10% cluster-stratified sample).
-  `s30` (the 30% sample most models and `05_visualization.ipynb` actually load) was produced
-  by an earlier/since-renamed version of this pipeline. Either regenerate `03_clustering_sampling.ipynb`
-  with a documented `SAMPLED_FRACTION` for `s30`, or retire `s30` in favor of `s10` everywhere
-  and update the notebooks/docs that reference it.
-- **No consistent train/val/test split shared across models.** `05_visualization.ipynb` exports
-  a temporal split (`data/splits/train.parquet`, `val.parquet`, `test.parquet`); the model notebooks
-  each do their own splitting instead of consuming it. Standardizing on one split would make
-  results genuinely comparable across models.
+- **Dataset-scale bug fixed, notebooks not yet re-run.** `amazon_reviews_s10.parquet`/`s30.parquet`
+  were retired — they were only a 10% (or 30%) sample of the *pre*-product-filter data, missing a
+  second, post-sampling reapplication of the ≥5-reviews-per-product filter that the original
+  `feat/multimodel` branch had already solved (commit `d6d382f`) and the presentation documents
+  (~99K labelled reviews). The pipeline now produces `data/processed/s03_filter.parquet` /
+  `multimodal_s03_filter.parquet` (99,627 rows) instead, and all three helpfulness models
+  (`01_lstm.ipynb`, `02_bert.ipynb`, `03_multimodel.ipynb`) read from it directly — verified
+  statically, but none of the four data-pipeline notebooks or three model notebooks have actually
+  been re-executed against this fix yet. That's the next concrete step before trusting any
+  result in this repo.
+- **No consistent train/val/test split shared across models.** `05_eda_and_splits.ipynb` exports
+  a temporal split (`data/splits/train.parquet`, `val.parquet`, `test.parquet`) from the same
+  `s03_filter.parquet`; the model notebooks each do their own splitting instead of consuming it.
+  Standardizing on one split would make results genuinely comparable across models.
 - **Image downloader reliability.** `04_image_downloader.ipynb` has no retry/backoff and takes
   ~90 minutes end-to-end (73K images) with a nontrivial timeout/connection-error rate. Worth
   adding retries with backoff, or caching partial results more robustly.
@@ -34,17 +38,17 @@ from the individual model reports.
   `models/*.pt` or metrics file checked in (by design, `*.pt`/`*.h5`/`*.hdf5` are gitignored).
   Consider a lightweight artifact store (even just checked-in metrics JSON per run) so results
   don't have to be re-derived by reading notebook cell outputs.
-- **Not apples-to-apples.** LSTM trains on the full 942K-row processed dataset, BERT on its
-  own independently-sourced 48.7K-review subset, the multimodal model on ~83K rows with
-  images. A shared benchmark harness (same split, same eval script) would make "best model"
-  comparisons meaningful rather than approximate.
+- **Apples-to-apples fix landed, needs verification.** LSTM, BERT, and the multimodal model
+  now all read `s03_filter.parquet`/`multimodal_s03_filter.parquet` (99,627 rows each) instead
+  of three differently-sized, differently-sourced samples. A shared benchmark harness (same
+  split, same eval script) would still make "best model" comparisons more rigorous, but the
+  bigger gap is simply re-running all three notebooks to confirm the fix holds end to end.
 - **`models/` folder name collision.** The multimodal notebook saves its checkpoint to
   `../models/multimodal_model_full.pt`, which (after this restructuring) resolves inside the
   `models/` notebooks folder rather than a dedicated checkpoints directory. Rename one of the
   two, e.g. a `checkpoints/` folder for saved weights, separate from `models/` (notebooks).
 - **More robust text encoder for helpfulness prediction** — compare the Hybrid BiLSTM against
-  a fine-tuned transformer on the same full-size sample the LSTM uses (942K rows), not just
-  BERT's smaller 48.7K-review subset.
+  a fine-tuned transformer on the same `s03_filter.parquet` sample (99,627 rows) both now use.
 - **Calibration + threshold tuning** for the helpfulness classifiers, optimized for the actual
   downstream use case (precision@k, recall floor, or cost-sensitive F1) rather than raw accuracy.
 - **Temporal and product-group validation** to check drift robustness and leakage risk beyond

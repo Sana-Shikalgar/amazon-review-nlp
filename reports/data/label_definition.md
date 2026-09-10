@@ -23,21 +23,26 @@ helpful_binary = 0  if  helpful_vote == 0
 ### Alignment with literature
 - McAuley et al. (Amazon review datasets) and subsequent work commonly binarise at `helpful_vote > 0` or use the ratio `helpful_vote / total_vote > 0.5`. We use the simpler threshold as `total_vote` is not available in this dataset.
 
-## Class Distribution (on `amazon_reviews_s30.parquet`)
+## Class Distribution (on `s03_filter.parquet`)
 
-> **Note — label adaptation:** `amazon_reviews_s30.parquet` was pre-filtered to retain only
-> reviews with `helpful_vote > 0`, so the primary threshold produces a single-class label.
-> `05_visualization.ipynb` detects this and falls back to a **median split** on `helpful_vote` (threshold = 1),
-> producing the near-balanced distribution below.
+> **Note — label adaptation:** the pipeline pre-filters to retain only reviews with
+> `helpful_vote > 0`, so the primary threshold produces a single-class label.
+> `05_eda_and_splits.ipynb` detects this and falls back to a **median split** on `helpful_vote`
+> (threshold = 1), producing a near-balanced distribution.
 
-| Class         | Label | Actual % (2,826,526 rows) |
-|---------------|-------|--------------------------|
-| Not Helpful   | 0     | ~53%                     |
-| Helpful       | 1     | ~47%                     |
+> **Stale — needs re-verification.** These figures were measured on the retired
+> `amazon_reviews_s30.parquet` (2,826,526 rows). The pipeline now produces
+> `s03_filter.parquet` (99,627 rows) instead — the class balance should be similar (same
+> `helpful_vote > 1` median-split logic) but hasn't been re-measured on the new file.
+
+| Class         | Label | Actual % (2,826,526 rows, pre-fix) |
+|---------------|-------|-------------------------------------|
+| Not Helpful   | 0     | ~53%                                |
+| Helpful       | 1     | ~47%                                |
 
 Median split: `helpful_binary = 1` if `helpful_vote > 1`, else `0`.
 
-*Exact figures printed in `05_visualization.ipynb` Cell 3 output.*
+*Exact figures printed in `05_eda_and_splits.ipynb` Cell 3 output — re-run to refresh.*
 
 ## Implication for Modelling
 
