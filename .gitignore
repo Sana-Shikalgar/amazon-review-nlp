@@ -1,6 +1,6 @@
-# Source of Truth
-data/processed/source_of_truth.parquet
-data/processed/clean_reviews.parquet
+# Intermediate pipeline files (multi-GB each; regenerate via notebook/01_data_preparation.ipynb
+# and 02_feature_engineering.ipynb; too large for GitHub even with LFS)
+data/sourced/
 
 # GloVe embeddings (too large for GitHub)
 data/glove.6B.100d.txt
