@@ -1,9 +1,7 @@
 # Final Feature Selection & Validation Report
 
-> **This document's conclusions conflict with `Feature_Redundancy_Analysis.md`** on whether to
-> keep `word_count` or `review_length`, and `has_image` or `image_count`. That report's
-> quantitative VIF/correlation analysis recommends the opposite of what's below. See
-> `FUTURE.md` for the open question on which the team should standardize on.
+> See `feature_redundancy_analysis.md` for the supporting Pearson correlation, Mutual
+> Information, and VIF analysis behind the feature choices below.
 
 ## Executive Summary
 This report presents the consolidated, validated feature set for the Amazon Review Helpfulness Optimization project. By systematically extracting engineered features from the `feat/eda`, `feat/lstm`, and `feat/multimodel` branches, we've produced a robust pipeline that balances predictive power, model interpretability, and business value.
@@ -31,14 +29,14 @@ We scanned the developer branches and identified the following engineered featur
 ## Step 2 & 3: Statistical Evaluation & Redundancy Analysis
 
 ### Overlap & Multicollinearity: `review_length` vs. `word_count` vs. `characters_per_word`
-- **Correlation**: `review_length` and `word_count` are near perfectly correlated ($r \approx 0.98$). Including both in a linear model or logistic regression introduces severe multicollinearity (VIF > 10).
-- **Resolution**: `word_count` acts as a slightly cleaner signal than raw character length, but character length is computationally cheaper to extract in a fast PySpark/Pandas pipeline. 
-- **Derived Feature**: `characters_per_word` provides completely orthogonal (uncorrelated) mutual information regarding text complexity. 
-- **Action**: Retain `word_count` and `characters_per_word`. Discard `review_length`.
+- **Correlation**: `review_length` and `word_count` are near perfectly correlated (r=0.997, VIF=247.7 on the full 942,176-review sample). Including both in a linear model or logistic regression introduces severe multicollinearity.
+- **Resolution**: `review_length` has marginally higher mutual information with the target and is computationally cheaper to extract than a tokenized word count.
+- **Derived Feature**: `characters_per_word` provides completely orthogonal (uncorrelated) mutual information regarding text complexity.
+- **Action**: Retain `review_length` and `characters_per_word`. Discard `word_count`.
 
 ### Evaluating Visual Signals: `image_count` vs. `has_image`
-- **Correlation**: Extremely high. Over 90% of reviews with images have only 1 or 2 images.
-- **Action**: Retain `has_image` (Boolean) as it provides 95% of the predictive value of `image_count` without suffering from outlier skewness from reviews with 10+ images. 
+- **Correlation**: Strong (r=0.728). Over 90% of reviews with images have only 1 or 2 images.
+- **Action**: Retain `image_count` (bucketed as `image_bucket`) as it preserves the magnitude signal (1 vs. 2 vs. 3+ images) that `has_image` collapses away, at negligible extra cost.
 
 ### Time Dynamics: `days_since_first_review`
 - **Predictive Power**: Extremely high. Helpfulness is a monotonically increasing function of time exposure. 
@@ -57,8 +55,8 @@ We scanned the developer branches and identified the following engineered featur
 ## Step 6 & 7: Final Feature Recommendation & Business Justification
 
 ### 🌱 Strongly Recommended (The Core Pipeline)
-1. **`has_image`** (Categorical): Immediate indicator of effort and visual proof. High business trust index.
-2. **`word_count`** (Numerical): Best proxy for review depth.
+1. **`image_count`** (Numerical, bucketed as `image_bucket`): Immediate indicator of effort and visual proof. High business trust index.
+2. **`review_length`** (Numerical): Best proxy for review depth; higher MI than `word_count`.
 3. **`is_verified`** (Categorical): Filters out potential bot spam; highly valued by the Amazon algorithm.
 4. **`rating_extremity`** (Numerical): Captures the psychological consensus that polarized reviews offer the strongest opinions. 
 5. **`characters_per_word`** (Numerical): Quality filter for spam/keyboard mashing.
@@ -68,8 +66,8 @@ We scanned the developer branches and identified the following engineered featur
 2. **`is_weekend`**: Minor lift, easy to compute.
 
 ### 🚫 Not Useful / Redundant (Removed)
-1. **`review_length`**: Dropped in favor of `word_count`.
-2. **`image_count`**: Dropped in favor of `has_image`.
+1. **`word_count`**: Dropped in favor of `review_length` (r=0.997, VIF=247.7).
+2. **`has_image`**: Dropped in favor of `image_count` (r=0.728) — collapses away the 1-vs-2-vs-3+ magnitude signal.
 3. **`day_of_week`**: Too granular; `is_weekend` captures the real variance.
 
 ---

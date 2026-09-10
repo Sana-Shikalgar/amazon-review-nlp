@@ -2,12 +2,9 @@
 
 Amazon Electronics Reviews — Helpfulness Prediction Pipeline
 
-> **This document's conclusions conflict with `Final_Feature_Selection_Report.md`** on whether
-> to keep `word_count` or `review_length`, and `has_image` or `image_count`. This report is the
-> quantitative one (Pearson correlation, Mutual Information, VIF on 942,176 reviews); the other
-> is a narrative business-rationale writeup. See `FUTURE.md` for the open question on which the
-> team should standardize on — `02_feature_engineering.ipynb` should ultimately implement one
-> consistent choice.
+> This is the quantitative analysis (Pearson correlation, Mutual Information, VIF on 942,176
+> reviews) behind the feature set `02_feature_engineering.ipynb` implements. See
+> `final_feature_selection_report.md` for the narrative business-rationale writeup.
 
 ## Executive Summary
 

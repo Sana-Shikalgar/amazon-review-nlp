@@ -6,15 +6,15 @@ This folder contains the Data Engineering and Strategy deliverables for the Amaz
 
 1. Feature refinement and redundancy analysis
 - Feature correlation and redundancy study focused on overlapping text-length signals.
-- Artifact: `reports/data/Feature_Redundancy_Analysis.md`
+- Artifact: `reports/data/feature_redundancy_analysis.md`
 
 2. Data splitting strategy documentation
 - Strategy comparison and recommendation for model development split protocol.
-- Artifacts: `notebook/train_test_split_protocol.ipynb`, `reports/data/Data_Splitting_Strategy.md`
+- Artifacts: `notebook/train_test_split_protocol.ipynb`, `reports/data/data_splitting_strategy.md`
 
 3. Sampling methodology documentation
 - Sampling rationale and methodology write-up for scaled data handling.
-- Artifact: `reports/data/Sampling_Methodology.md`
+- Artifact: `reports/data/sampling_methodology.md`
 
 ## Scope Covered
 
