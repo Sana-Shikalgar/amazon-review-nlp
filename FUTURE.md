@@ -6,49 +6,22 @@ from the individual model reports.
 
 ## Data pipeline
 
-- **Feature-selection guidance is contradictory across reports.** `reports/data/Final_Feature_Selection_Report.md`
-  recommends keeping `word_count` and dropping `review_length` (and keeping `has_image` over
-  `image_count`); `reports/data/Feature_Redundancy_Analysis.docx`'s quantitative VIF/correlation
-  analysis recommends the opposite on both (keep `review_length` over `word_count`, r=0.997/VIF=247.7;
-  keep `image_count` over `has_image`). These need to be reconciled — the docx's analysis is backed
-  by explicit VIF numbers and is the more likely one to trust, but the team should confirm which
-  feature set `02_feature_engineering.ipynb` should actually standardize on.
-- **Dataset-scale bug fixed, notebooks not yet re-run.** `amazon_reviews_s10.parquet`/`s30.parquet`
-  were retired — they were only a 10% (or 30%) sample of the *pre*-product-filter data, missing a
-  second, post-sampling reapplication of the ≥5-reviews-per-product filter that the original
-  `feat/multimodel` branch had already solved (commit `d6d382f`) and the presentation documents
-  (~99K labelled reviews). The pipeline now produces `data/processed/s03_filter.parquet` /
-  `multimodal_s03_filter.parquet` (99,627 rows) instead, and all three helpfulness models
-  (`01_lstm.ipynb`, `02_bert.ipynb`, `03_multimodel.ipynb`) read from it directly — verified
-  statically, but none of the four data-pipeline notebooks or three model notebooks have actually
-  been re-executed against this fix yet. That's the next concrete step before trusting any
-  result in this repo.
-- **No consistent train/val/test split shared across models.** `05_feature_analysis_and_split.ipynb` exports
-  a temporal split (`data/splits/train.parquet`, `val.parquet`, `test.parquet`) from the same
-  `s03_filter.parquet`; the model notebooks each do their own splitting instead of consuming it.
-  Standardizing on one split would make results genuinely comparable across models.
+- **Train/val/test split is per-model, not shared.** Each model notebook
+  (`06_lstm.ipynb`, `07_bert.ipynb`, `08_multimodel.ipynb`) performs its own split directly from
+  `s03_filter.parquet` / `multimodal_s03_filter.parquet` (see `notebook/train_test_split_protocol.ipynb`
+  for the rationale) — this let each model be developed and iterated on independently. Moving to
+  one shared split would make cross-model comparisons more direct.
 - **Image downloader reliability.** `04_image_downloader.ipynb` has no retry/backoff and takes
   ~90 minutes end-to-end (73K images) with a nontrivial timeout/connection-error rate. Worth
   adding retries with backoff, or caching partial results more robustly.
 
 ## Modeling
 
-- **No saved model checkpoints or artifacts anywhere.** Every model (LSTM, BERT, multimodal,
-  sentiment/emotion) must be fully retrained from scratch to reproduce results — there's no
-  `models/*.pt` or metrics file checked in (by design, `*.pt`/`*.h5`/`*.hdf5` are gitignored).
-  Consider a lightweight artifact store (even just checked-in metrics JSON per run) so results
-  don't have to be re-derived by reading notebook cell outputs.
-- **Apples-to-apples fix landed, needs verification.** LSTM, BERT, and the multimodal model
-  now all read `s03_filter.parquet`/`multimodal_s03_filter.parquet` (99,627 rows each) instead
-  of three differently-sized, differently-sourced samples. A shared benchmark harness (same
-  split, same eval script) would still make "best model" comparisons more rigorous, but the
-  bigger gap is simply re-running all three notebooks to confirm the fix holds end to end.
-- **`models/` folder name collision.** The multimodal notebook saves its checkpoint to
-  `../models/multimodal_model_full.pt`, which (after this restructuring) resolves inside the
-  `models/` notebooks folder rather than a dedicated checkpoints directory. Rename one of the
-  two, e.g. a `checkpoints/` folder for saved weights, separate from `models/` (notebooks).
-- **More robust text encoder for helpfulness prediction** — compare the Hybrid BiLSTM against
-  a fine-tuned transformer on the same `s03_filter.parquet` sample (99,627 rows) both now use.
+- **Checkpoints exist locally but aren't version-controlled.** `08_multimodel.ipynb` saves a
+  real checkpoint to `models/` (`multimodal_model_full.pt`, `multimodal_model_metadata_full.pkl`),
+  but `*.pt`/`*.h5`/`*.hdf5` are gitignored (too large), so LSTM and BERT must still be
+  retrained from scratch to reproduce results. Consider a lightweight metrics-JSON artifact
+  store per run so results don't have to be re-derived by reading notebook cell outputs.
 - **Calibration + threshold tuning** for the helpfulness classifiers, optimized for the actual
   downstream use case (precision@k, recall floor, or cost-sensitive F1) rather than raw accuracy.
 - **Temporal and product-group validation** to check drift robustness and leakage risk beyond
@@ -79,10 +52,3 @@ from the individual model reports.
 - **No CI or automated notebook execution testing.** This consolidation's "does everything run"
   check was a manual, one-time pass. A scheduled or PR-triggered `nbconvert --execute` run
   (even just on the fast data notebooks) would catch path/dependency breakage automatically.
-- **Avoid blocking `input()` calls and hardcoded sample-size assumptions in notebooks** — both
-  were found and fixed during this consolidation (a blocking prompt for k in the clustering
-  notebook, and silhouette/visualization sampling that assumed ≥100K rows). Non-interactive
-  execution should be a review criterion for new notebook cells.
-- **Git LFS tracking must be reconciled deliberately when merging branches** — several source
-  branches had `.gitattributes` silently emptied at some point, which would have unpinned
-  `*.parquet`/`*.csv` from LFS tracking if not caught during this merge.
