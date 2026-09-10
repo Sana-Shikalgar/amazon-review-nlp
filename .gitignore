@@ -1,3 +1,16 @@
+# Intermediate pipeline files (multi-GB each; regenerate via notebook/01_data_preparation.ipynb
+# and 02_feature_engineering.ipynb; too large for GitHub even with LFS)
+data/sourced/
+
+# Downloaded product images (13GB+; regenerate via notebook/04_image_downloader.ipynb)
+data/images/
+
+# Pretrained GloVe embeddings (347MB; public/stable, auto-downloaded by 06_lstm.ipynb)
+data/glove.6B.100d.txt
+
+# Word/Office temporary lock files
+~$*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -205,3 +218,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Model weight files (not tracked; too large / no checkpoints saved yet)
+*.pt
+*.h5
+*.hdf5
