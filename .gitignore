@@ -5,6 +5,9 @@ data/processed/clean_reviews.parquet
 # GloVe embeddings (too large for GitHub)
 data/glove.6B.100d.txt
 
+# Downloaded product images (13GB+; regenerate via notebook/04_image_downloader.ipynb)
+data/images/
+
 # Word/Office temporary lock files
 ~$*
 
