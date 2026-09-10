@@ -23,7 +23,7 @@ from the individual model reports.
   statically, but none of the four data-pipeline notebooks or three model notebooks have actually
   been re-executed against this fix yet. That's the next concrete step before trusting any
   result in this repo.
-- **No consistent train/val/test split shared across models.** `05_eda_and_splits.ipynb` exports
+- **No consistent train/val/test split shared across models.** `05_feature_analysis_and_split.ipynb` exports
   a temporal split (`data/splits/train.parquet`, `val.parquet`, `test.parquet`) from the same
   `s03_filter.parquet`; the model notebooks each do their own splitting instead of consuming it.
   Standardizing on one split would make results genuinely comparable across models.

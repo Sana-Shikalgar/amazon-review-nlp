@@ -16,13 +16,15 @@ End-to-end pipeline for two tasks on the Amazon Electronics Reviews dataset
 ```
 data/
   processed/            — cleaned/sampled dataset (s03_filter.parquet, multimodal_s03_filter.parquet), Git LFS
-  splits/                — temporal train/val/test split exported by 05_eda_and_splits.ipynb, Git LFS
+  splits/                — temporal train/val/test split exported by 05_feature_analysis_and_split.ipynb, Git LFS
 notebook/                — data pipeline, run in order
   01_data_preparation.ipynb    — load raw reviews, clean, filter
   02_feature_engineering.ipynb — engineer review_length, image_bucket, popularity, etc.
   03_clustering_sampling.ipynb — cluster-stratified sampling + post-sampling product filter -> s03_filter.parquet
   04_image_downloader.ipynb    — download review images, join image paths -> multimodal_s03_filter.parquet
-  05_eda_and_splits.ipynb      — EDA, correlations, mutual information, temporal train/val/test split
+  05_feature_analysis_and_split.ipynb — correlations, mutual information ranking, and other
+                                 post-feature-engineering analysis on the sampled data, plus
+                                 the temporal train/val/test split
 models/                  — model notebooks, numbered by progression in complexity
   01_lstm.ipynb           — TF-IDF baselines + Vanilla LSTM + BiLSTM+GloVe + Hybrid BiLSTM
   02_bert.ipynb            — DistilBERT + metadata fusion model
@@ -75,7 +77,7 @@ jupyter nbconvert --to notebook --execute --inplace notebook/01_data_preparation
 jupyter nbconvert --to notebook --execute --inplace notebook/02_feature_engineering.ipynb
 jupyter nbconvert --to notebook --execute --inplace notebook/03_clustering_sampling.ipynb
 jupyter nbconvert --to notebook --execute --inplace notebook/04_image_downloader.ipynb   # needed for models/03_multimodel.ipynb
-jupyter nbconvert --to notebook --execute --inplace notebook/05_eda_and_splits.ipynb
+jupyter nbconvert --to notebook --execute --inplace notebook/05_feature_analysis_and_split.ipynb
 
 jupyter nbconvert --to notebook --execute --inplace models/01_lstm.ipynb
 jupyter nbconvert --to notebook --execute --inplace models/02_bert.ipynb

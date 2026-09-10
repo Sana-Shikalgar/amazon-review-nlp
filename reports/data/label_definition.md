@@ -27,7 +27,7 @@ helpful_binary = 0  if  helpful_vote == 0
 
 > **Note — label adaptation:** the pipeline pre-filters to retain only reviews with
 > `helpful_vote > 0`, so the primary threshold produces a single-class label.
-> `05_eda_and_splits.ipynb` detects this and falls back to a **median split** on `helpful_vote`
+> `05_feature_analysis_and_split.ipynb` detects this and falls back to a **median split** on `helpful_vote`
 > (threshold = 1), producing a near-balanced distribution.
 
 > **Stale — needs re-verification.** These figures were measured on the retired
@@ -42,7 +42,7 @@ helpful_binary = 0  if  helpful_vote == 0
 
 Median split: `helpful_binary = 1` if `helpful_vote > 1`, else `0`.
 
-*Exact figures printed in `05_eda_and_splits.ipynb` Cell 3 output — re-run to refresh.*
+*Exact figures printed in `05_feature_analysis_and_split.ipynb` Cell 3 output — re-run to refresh.*
 
 ## Implication for Modelling
 
