@@ -34,16 +34,17 @@ from the individual model reports.
   `models/*.pt` or metrics file checked in (by design, `*.pt`/`*.h5`/`*.hdf5` are gitignored).
   Consider a lightweight artifact store (even just checked-in metrics JSON per run) so results
   don't have to be re-derived by reading notebook cell outputs.
-- **Not apples-to-apples.** LSTM trains on 846K rows, BERT on a 48K-review subset, the
-  multimodal model on ~73K rows with images. A shared benchmark harness (same split, same
-  eval script) would make "best model" comparisons meaningful rather than approximate.
+- **Not apples-to-apples.** LSTM trains on the full 942K-row processed dataset, BERT on its
+  own independently-sourced 48.7K-review subset, the multimodal model on ~83K rows with
+  images. A shared benchmark harness (same split, same eval script) would make "best model"
+  comparisons meaningful rather than approximate.
 - **`models/` folder name collision.** The multimodal notebook saves its checkpoint to
   `../models/multimodal_model_full.pt`, which (after this restructuring) resolves inside the
   `models/` notebooks folder rather than a dedicated checkpoints directory. Rename one of the
   two, e.g. a `checkpoints/` folder for saved weights, separate from `models/` (notebooks).
 - **More robust text encoder for helpfulness prediction** — compare the Hybrid BiLSTM against
-  a fine-tuned transformer on the same full-size sample the LSTM uses (846K rows), not just
-  BERT's smaller 48K-review subset.
+  a fine-tuned transformer on the same full-size sample the LSTM uses (942K rows), not just
+  BERT's smaller 48.7K-review subset.
 - **Calibration + threshold tuning** for the helpfulness classifiers, optimized for the actual
   downstream use case (precision@k, recall floor, or cost-sensitive F1) rather than raw accuracy.
 - **Temporal and product-group validation** to check drift robustness and leakage risk beyond

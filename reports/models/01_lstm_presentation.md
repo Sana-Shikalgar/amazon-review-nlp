@@ -2,7 +2,9 @@
 ### Presentation Brief
 
 > **Dataset-size note:** figures below are from a run on `amazon_reviews_s10.parquet` when it
-> had 846,757 rows; the committed file now has 942,176 (see `01_lstm_readme.md` for detail).
+> had 846,757 rows; the committed file now has 942,176. A fresh run on the current file has
+> been verified and gives very similar results (F1 0.6272, AUC 0.7183) — see `01_lstm_readme.md`
+> and `README.md` for detail.
 
 ---
 

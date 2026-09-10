@@ -2,11 +2,12 @@
 
 This document provides a high-level and critical interpretation of `lstm/lstmv1.ipynb`, including model outcomes, explainability findings, limitations, and recommended next steps.
 
-> **Dataset-size note:** this analysis was run against `amazon_reviews_s10.parquet` when it had
-> 846,757 rows. The currently committed file has 942,176 rows (a later resample) — results
-> below will shift somewhat on a fresh run. Directional findings (Hybrid BiLSTM wins,
-> `review_length` dominates) are expected to hold; treat exact metric values as historical
-> until re-verified.
+> **Dataset-size note:** the detailed analysis below (SHAP/LIME findings, per-model narrative)
+> was run against `amazon_reviews_s10.parquet` when it had 846,757 rows; the committed file now
+> has 942,176 rows. A fresh full run on the current file has been verified (see `README.md`'s
+> model comparison table): Hybrid BiLSTM still wins every metric, with F1 0.6272 and AUC 0.7183
+> (vs. 0.6376 / 0.72 below) — close enough that the directional findings and feature-importance
+> discussion here hold without a full rewrite.
 
 ## 1) Objective and Scope
 

@@ -92,19 +92,25 @@ pipeline against a small streamed sample instead — see the notebook for detail
 
 ## Helpfulness prediction — model comparison
 
-<!-- TODO: filled in from the fresh full-execution results; see the per-model reports in
-     reports/models/ for the underlying detail. Sample sizes differ across models (LSTM:
-     846K rows, BERT: 48K-review subset, multimodal: ~73K rows with images) — see FUTURE.md
-     for the plan to make this genuinely apples-to-apples. -->
+Fresh results from a full end-to-end run on this repo's committed data; see the per-model
+reports in `reports/models/` for the underlying detail. Sample sizes differ across models by
+design (LSTM uses the full processed dataset, BERT and the multimodal model use their own
+independently-sized samples) — see `FUTURE.md` for the plan to make this genuinely
+apples-to-apples.
 
 | Model | Sample size | Accuracy | F1 | Precision | Recall | AUC |
 |---|---|---|---|---|---|---|
-| Hybrid BiLSTM (best of the LSTM family) | 846,757 | _pending_ | _pending_ | _pending_ | _pending_ | _pending_ |
-| BERT (DistilBERT + metadata fusion) | 48,675 | _pending_ | _pending_ | _pending_ | _pending_ | _pending_ |
-| Multimodal (text + image + metadata) | ~73,000 | — | _pending_ | _pending_ | _pending_ | — |
+| Hybrid BiLSTM (best of the LSTM family) | 942,176 (753,740 train / 188,436 test) | 0.6601 | 0.6272 | 0.6456 | 0.6098 | 0.7183 |
+| BERT (DistilBERT + metadata fusion) | 48,705 (34,093 train / 7,306 val / 7,306 test) | 0.6755 | 0.5739 | 0.6149 | 0.5381 | — |
+| Multimodal (text + image + metadata) | ~83,000 (with downloaded images) | _pending_ | _pending_ | _pending_ | _pending_ | — |
 
-**Best model:** _pending final numbers from this run — see `reports/models/` for full analysis
-per model once updated._
+**Best model (so far): Hybrid BiLSTM** — leads on every metric that's comparable across
+models (F1 0.6272, AUC 0.7183), on the largest of the three sample sizes. The multimodal
+row is still training (see `FUTURE.md`); this section will be updated once it completes.
+BERT's lower F1 despite a similar accuracy comes from a much smaller, differently-sourced
+sample (48.7K reservoir-sampled reviews vs. the LSTM's full 942K-row processed dataset) —
+not a like-for-like comparison. AUC is left blank for BERT since its notebook reports only
+accuracy/precision/recall/F1, not class probabilities suitable for ROC-AUC.
 
 ---
 
@@ -117,10 +123,11 @@ Inference-only pipeline (`models/sentiment_analysis.ipynb`) — no training perf
 
 **Pipeline steps:**
 
-1. Load `data/processed/amazon_reviews_s10.parquet` (846K reviews, 17 columns)
+1. Load `data/processed/amazon_reviews_s10.parquet` (942,176 reviews, 12 columns) — title is
+   already merged into `review_text` upstream, so `combined_text` here is just an alias of it
 2. Filter to the top-5 most helpful reviews per product, ranked by `helpful_vote` with
-   `review_length` as tiebreaker
-3. Run batched inference on `combined_text` (title + `[SEP]` + review body) with 512-token
+   `review_length` as tiebreaker (942,176 → 599,361 reviews)
+3. Run batched inference on `combined_text` with 512-token
    truncation
 4. Store full class probability distributions alongside top-1 labels
 
