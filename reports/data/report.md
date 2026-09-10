@@ -10,7 +10,7 @@ This folder contains the Data Engineering and Strategy deliverables for the Amaz
 
 2. Data splitting strategy documentation
 - Strategy comparison and recommendation for model development split protocol.
-- Artifacts: `notebook/Data_Splitting_Strategy.ipynb`, `reports/data/Data_Splitting_Strategy.md`
+- Artifacts: `notebook/train_test_split_protocol.ipynb`, `reports/data/Data_Splitting_Strategy.md`
 
 3. Sampling methodology documentation
 - Sampling rationale and methodology write-up for scaled data handling.
